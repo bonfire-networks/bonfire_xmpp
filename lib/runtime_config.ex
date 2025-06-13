@@ -10,6 +10,14 @@ defmodule Bonfire.XMPP.RuntimeConfig do
   def config do
     import Config
 
+    yes? = ~w(true yes 1)
+    no? = ~w(false no 0)
+
+    with_xmpp = System.get_env("WITH_XMPP")
+
+    config :bonfire_xmpp,
+      modularity: (with_xmpp && with_xmpp not in no?) || :disabled
+
     release_path = System.get_env("RELEASE_ROOT")
 
     conf_root =
