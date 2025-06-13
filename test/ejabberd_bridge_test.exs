@@ -6,18 +6,19 @@ defmodule Bonfire.XMPP.Ejabberd.BridgeTest do
   setup_all do
     # Ensure ejabberd is running
     case GenServer.whereis(Bridge) do
-      nil -> 
+      nil ->
         {:ok, _pid} = Bridge.start_link([])
-      _pid -> 
+
+      _pid ->
         :ok
     end
 
     # Get the configured hostname
     hostname = Bridge.get_hostname()
-    
+
     # Clean up any existing test users
     cleanup_test_users(hostname)
-    
+
     %{hostname: hostname}
   end
 
@@ -45,9 +46,10 @@ defmodule Bonfire.XMPP.Ejabberd.BridgeTest do
     test "normalizes localhost to configured hostname", %{hostname: hostname} do
       # Test the normalize_jid function (we need to make it public for testing)
       # For now, we'll test through the send_message flow
-      result = capture_log(fn ->
-        Bridge.send_message("test@localhost", "user@example.com", "test message")
-      end)
+      result =
+        capture_log(fn ->
+          Bridge.send_message("test@localhost", "user@example.com", "test message")
+        end)
 
       assert result =~ "web@#{hostname}"
       assert result =~ "Normalizing test@localhost"
@@ -55,9 +57,10 @@ defmodule Bonfire.XMPP.Ejabberd.BridgeTest do
     end
 
     test "preserves non-localhost domains", %{hostname: _hostname} do
-      result = capture_log(fn ->
-        Bridge.send_message("user@example.com", "test@localhost", "test message")
-      end)
+      result =
+        capture_log(fn ->
+          Bridge.send_message("user@example.com", "test@localhost", "test message")
+        end)
 
       assert result =~ "user@example.com"
       assert result =~ "Normalizing user@example.com"
@@ -67,9 +70,10 @@ defmodule Bonfire.XMPP.Ejabberd.BridgeTest do
 
   describe "user management" do
     test "creates test users successfully", %{hostname: hostname} do
-      log = capture_log(fn ->
-        Bridge.create_test_users()
-      end)
+      log =
+        capture_log(fn ->
+          Bridge.create_test_users()
+        end)
 
       assert log =~ "alice@#{hostname} created"
       assert log =~ "bob@#{hostname} created"
@@ -87,7 +91,7 @@ defmodule Bonfire.XMPP.Ejabberd.BridgeTest do
 
       users = Bridge.list_users()
       assert is_list(users)
-      
+
       # Should have at least alice and bob
       user_names = Enum.map(users, fn {user, _server} -> user end)
       assert "alice" in user_names
@@ -110,14 +114,16 @@ defmodule Bonfire.XMPP.Ejabberd.BridgeTest do
 
   describe "JID creation and validation" do
     test "creates valid JIDs with correct hostname", %{hostname: hostname} do
-      log = capture_log(fn ->
-        Bridge.send_message("alice@localhost", "bob@localhost", "test")
-      end)
+      log =
+        capture_log(fn ->
+          Bridge.send_message("alice@localhost", "bob@localhost", "test")
+        end)
 
       # Check that JIDs are created with the correct hostname
       assert log =~ "Successfully created JID"
       assert log =~ hostname
-      refute log =~ "localhost" # Should not contain localhost in final JID
+      # Should not contain localhost in final JID
+      refute log =~ "localhost"
     end
   end
 
@@ -126,13 +132,14 @@ defmodule Bonfire.XMPP.Ejabberd.BridgeTest do
       # Create test users
       Bridge.create_test_users()
 
-      {result, log} = with_log(fn ->
-        Bridge.send_message("alice@#{hostname}", "bob@#{hostname}", "Hello Bob!")
-      end)
+      {result, log} =
+        with_log(fn ->
+          Bridge.send_message("alice@#{hostname}", "bob@#{hostname}", "Hello Bob!")
+        end)
 
       assert {:ok, message} = result
       assert message == "Message sent to local user"
-      
+
       # Verify the message was processed correctly
       assert log =~ "Creating JID from string: alice@#{hostname}"
       assert log =~ "Creating JID from string: bob@#{hostname}"
@@ -140,22 +147,24 @@ defmodule Bonfire.XMPP.Ejabberd.BridgeTest do
     end
 
     test "attempts to send message to remote users", %{hostname: hostname} do
-      {result, log} = with_log(fn ->
-        Bridge.send_message("alice@#{hostname}", "user@external.com", "Hello remote!")
-      end)
+      {result, log} =
+        with_log(fn ->
+          Bridge.send_message("alice@#{hostname}", "user@external.com", "Hello remote!")
+        end)
 
       assert {:ok, message} = result
       assert message =~ "remote delivery"
-      
+
       # Should attempt s2s connection
       assert log =~ "Routing message with from JID"
       assert log =~ hostname
     end
 
     test "handles invalid JIDs gracefully" do
-      {result, _log} = with_log(fn ->
-        Bridge.send_message("invalid-jid", "also-invalid", "test")
-      end)
+      {result, _log} =
+        with_log(fn ->
+          Bridge.send_message("invalid-jid", "also-invalid", "test")
+        end)
 
       assert {:error, _reason} = result
     end
@@ -164,9 +173,10 @@ defmodule Bonfire.XMPP.Ejabberd.BridgeTest do
       # Create test users
       Bridge.create_test_users()
 
-      {result, log} = with_log(fn ->
-        Bridge.test_local_message()
-      end)
+      {result, log} =
+        with_log(fn ->
+          Bridge.test_local_message()
+        end)
 
       assert {:ok, _message} = result
       assert log =~ "alice@#{hostname}"
@@ -185,7 +195,7 @@ defmodule Bonfire.XMPP.Ejabberd.BridgeTest do
     test "gets connected users list" do
       users = Bridge.get_connected_users()
       assert is_list(users)
-      
+
       # Each user should have required fields
       Enum.each(users, fn user ->
         assert Map.has_key?(user, :jid)
@@ -202,15 +212,19 @@ defmodule Bonfire.XMPP.Ejabberd.BridgeTest do
       Bridge.create_test_users()
 
       # Test local user
-      {_result, log} = with_log(fn ->
-        Bridge.send_message("alice@#{hostname}", "bob@#{hostname}", "local test")
-      end)
+      {_result, log} =
+        with_log(fn ->
+          Bridge.send_message("alice@#{hostname}", "bob@#{hostname}", "local test")
+        end)
+
       assert log =~ "Message sent to local user"
 
       # Test remote user
-      {_result, log} = with_log(fn ->
-        Bridge.send_message("alice@#{hostname}", "user@remote.com", "remote test")
-      end)
+      {_result, log} =
+        with_log(fn ->
+          Bridge.send_message("alice@#{hostname}", "user@remote.com", "remote test")
+        end)
+
       assert log =~ "remote delivery"
     end
   end
@@ -222,7 +236,8 @@ defmodule Bonfire.XMPP.Ejabberd.BridgeTest do
       :ejabberd_auth.remove_user("alice", hostname)
       :ejabberd_auth.remove_user("bob", hostname)
     rescue
-      _ -> :ok # Ignore errors if users don't exist
+      # Ignore errors if users don't exist
+      _ -> :ok
     end
   end
 

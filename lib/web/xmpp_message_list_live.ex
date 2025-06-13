@@ -1,7 +1,8 @@
 defmodule Bonfire.XMPP.Web.XmppMessageListLive do
   use Phoenix.LiveComponent
 
-  @topic "xmpp:messages:web@localhost" # Use "xmpp:messages:#{current_user_jid}" in real usage
+  # Use "xmpp:messages:#{current_user_jid}" in real usage
+  @topic "xmpp:messages:web@localhost"
 
   @impl true
   def mount(socket) do

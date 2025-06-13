@@ -1,5 +1,5 @@
 defmodule Bonfire.XMPP do
-    @moduledoc "./README.md" |> File.stream!() |> Enum.drop(1) |> Enum.join()
+  @moduledoc "./README.md" |> File.stream!() |> Enum.drop(1) |> Enum.join()
 
   use Bonfire.Common.Config
   use Bonfire.Common.Localise
@@ -16,16 +16,11 @@ defmodule Bonfire.XMPP do
     # ]
   )
 
-
   def repo, do: Config.repo()
 
   def project_path, do: Config.get(:project_path) || File.cwd!()
   def jid_path, do: Path.join(project_path(), "deps/xmpp/include/jid.hrl")
 
-
   # Send a message using ejabberd_router
   defdelegate send_message(from, to, body), to: Bonfire.XMPP.Ejabberd.Bridge
-
-
-
 end

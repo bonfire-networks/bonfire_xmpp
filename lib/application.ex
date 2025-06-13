@@ -7,7 +7,7 @@ defmodule Bonfire.XMPP.Application do
       # ejabberd will be started automatically as a dependency
       # We just need to start PubSub if not already started by the parent app
       # {Phoenix.PubSub, name: Bonfire.Common.PubSub},
-      
+
       # Our custom ejabberd event handler
       {Bonfire.XMPP.Ejabberd.Bridge, []}
     ]
@@ -15,6 +15,4 @@ defmodule Bonfire.XMPP.Application do
     opts = [strategy: :one_for_one, name: Bonfire.XMPP.Supervisor]
     Supervisor.start_link(children, opts)
   end
-
-
 end

@@ -10,12 +10,12 @@ defmodule Bonfire.XMPP.Web.XMPPLive do
       # Subscribe to ejabberd events
       Phoenix.PubSub.subscribe(Bonfire.Common.PubSub, "ejabberd:users")
       Phoenix.PubSub.subscribe(Bonfire.Common.PubSub, "ejabberd:sessions")
-      
+
       # Refresh data periodically
       :timer.send_interval(10_000, self(), :refresh_data)
     end
 
-    socket = 
+    socket =
       socket
       |> assign(:users, get_online_users())
       |> assign(:server_info, get_server_info())
@@ -28,16 +28,16 @@ defmodule Bonfire.XMPP.Web.XMPPLive do
 
   @impl true
   def handle_event("register_user", %{"username" => username, "password" => password}, socket) do
-    
-    result = case Bonfire.XMPP.Ejabberd.Bridge.register_user(
-      username, 
-      password
-    ) do
-      {:ok, username} -> {:success, "User #{username} registered successfully!"}
-      {:error, reason} -> error(reason, l "Registration failed")
-      :exists -> {:error, l "User already exists"}
-      other -> error(other, l "Registration failed")
-    end
+    result =
+      case Bonfire.XMPP.Ejabberd.Bridge.register_user(
+             username,
+             password
+           ) do
+        {:ok, username} -> {:success, "User #{username} registered successfully!"}
+        {:error, reason} -> error(reason, l("Registration failed"))
+        :exists -> {:error, l("User already exists")}
+        other -> error(other, l("Registration failed"))
+      end
 
     {:noreply, assign(socket, :registration_result, result)}
   end
@@ -49,7 +49,7 @@ defmodule Bonfire.XMPP.Web.XMPPLive do
 
   @impl true
   def handle_info(:refresh_data, socket) do
-    socket = 
+    socket =
       socket
       |> assign(:users, get_online_users())
       |> assign(:server_info, get_server_info())
@@ -61,26 +61,26 @@ defmodule Bonfire.XMPP.Web.XMPPLive do
   @impl true
   def handle_info({:user_online, user}, socket) do
     users = get_online_users()
-    
-    socket = 
+
+    socket =
       socket
       |> assign(:users, users)
       |> calculate_user_count()
       |> put_flash(:info, "#{user} came online")
-    
+
     {:noreply, socket}
   end
 
   @impl true
   def handle_info({:user_offline, user}, socket) do
     users = get_online_users()
-    
-    socket = 
+
+    socket =
       socket
       |> assign(:users, users)
       |> calculate_user_count()
       |> put_flash(:info, "#{user} went offline")
-    
+
     {:noreply, socket}
   end
 
@@ -101,8 +101,8 @@ defmodule Bonfire.XMPP.Web.XMPPLive do
           </div>
         </div>
       </div>
-
-      <!-- Server Info -->
+      
+    <!-- Server Info -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <div class="card bg-base-100 shadow">
           <div class="card-body">
@@ -124,7 +124,7 @@ defmodule Bonfire.XMPP.Web.XMPPLive do
         </div>
       </div>
 
-<%!-- 
+      <%!-- 
       <!-- Instructions -->
       <div class="alert alert-info mt-6 flex flex-col items-start">
         <h3 class="font-bold mb-2">Getting Started</h3>
@@ -193,8 +193,8 @@ defmodule Bonfire.XMPP.Web.XMPPLive do
           </div>
         </div>
       </div> --%>
-
-      <!-- Online Users -->
+      
+    <!-- Online Users -->
       <div class="card bg-base-100 shadow">
         <div class="card-body">
           <h2 class="card-title text-xl mb-4">
@@ -204,17 +204,13 @@ defmodule Bonfire.XMPP.Web.XMPPLive do
             No users currently online. Try registering and connecting with an XMPP client!
           </div>
           <div :if={@user_count > 0} class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            <div 
-              :for={user <- @users} 
-              class="alert alert-success flex items-center"
-            >
+            <div :for={user <- @users} class="alert alert-success flex items-center">
               <span class="badge badge-success badge-xs mr-2"></span>
               <span class="font-medium"><%= user %></span>
             </div>
           </div>
         </div>
       </div>
-
     </div>
 
     <.live_component module={Bonfire.XMPP.Web.XmppMessageFormLive} id="msgform" />
@@ -244,9 +240,9 @@ defmodule Bonfire.XMPP.Web.XMPPLive do
         version: :ejabberd_config.get_version()
       }
     rescue
-      _ -> 
+      _ ->
         %{
-          status: "Unknown", 
+          status: "Unknown",
           node: node(),
           version: "Unknown"
         }
