@@ -11,7 +11,7 @@ defmodule Bonfire.XMPP.RuntimeConfig do
     import Config
 
     yes? = ~w(true yes 1)
-    no? = ~w(false no 0)
+    no? = ~w(false no none 0)
 
     with_xmpp = System.get_env("WITH_XMPP")
 
