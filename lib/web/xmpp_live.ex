@@ -101,8 +101,8 @@ defmodule Bonfire.XMPP.Web.XMPPLive do
           </div>
         </div>
       </div>
-      
-    <!-- Server Info -->
+
+      <!-- Server Info -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <div class="card bg-base-100 shadow">
           <div class="card-body">
@@ -193,8 +193,8 @@ defmodule Bonfire.XMPP.Web.XMPPLive do
           </div>
         </div>
       </div> --%>
-      
-    <!-- Online Users -->
+
+      <!-- Online Users -->
       <div class="card bg-base-100 shadow">
         <div class="card-body">
           <h2 class="card-title text-xl mb-4">
